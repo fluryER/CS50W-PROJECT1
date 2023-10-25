@@ -4,8 +4,16 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 from flask_session import Session
-from helpers import login_required
+import requests
+from functools import wraps
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("user_id") is None:
+            return redirect("/login")
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 load_dotenv()#Se manda a llamar las variables de entorno de .env
@@ -28,11 +36,10 @@ db = scoped_session(sessionmaker(bind=engine))
 
 @app.route('/') #Ruta principal del servidor
 def index():
-
-
-
-
-    return render_template('login.html')
+    if session.get("user_id") is None:
+        return render_template('login.html')
+    else:
+        return render_template("busqueda.html")
 
 @app.route('/register', methods=['GET', 'POST']) #Ruta principal del servidor
 def register():
@@ -111,10 +118,47 @@ def logout():
          
 
 
-
+@app.route('/busqueda', methods=['POST'])
+@login_required
+def busqueda():
+    busqueda = request.form.get("query")
+    busqueda = busqueda.title()
+    if not busqueda:
+        flash("Por favor ingrese un dato a buscar", "info")
+        return redirect("/")
+    libros_query= text("SELECT * FROM books WHERE LOWER(isbn) LIKE LOWER(:busqueda) OR LOWER(title) LIKE LOWER(:busqueda) OR LOWER(author) LIKE LOWER(:busqueda) OR year LIKE :busqueda")
+    libros = db.execute(libros_query, {"busqueda": f"%{busqueda.lower()}%"}).fetchall()
+    print(libros)
+    return render_template("resultados.html", books=libros)
 
     
-
+@app.route('/libro_detalles/<string:isbn>', methods=['POST'])
+@login_required
+def libro_detalles(isbn):
+    api_url = f'https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}'
+    api_respuesta = requests.get(api_url)
+    if api_respuesta.status_code == 200:
+        book_info = api_respuesta.json()["items"][0]["volumeInfo"]
+        description = book_info.get("description", "Descripción no disponible.")
+        img = book_info.get("imageLinks", {}).get("thumbnail", "https://placehold.co/128x192?text=Image+Not+Found")
+        title = book_info.get("title", "Título no disponible.")
+        author = book_info.get("authors", ["Autor no disponible."])[0]
+        year = book_info.get("publishedDate", "Año de publicación no disponible.")
+        rating = book_info.get("averageRating", 0)
+        rating_count = book_info.get("ratingsCount", 0)
+        # return(f'{book_img}')
+        return render_template("detalles.html", 
+                               isbn=isbn,
+                               description=description,
+                               img=img,
+                               title=title,
+                               author=author,
+                               year=year,
+                               rating=rating,
+                               rating_count=rating_count,
+                               )
+    else:
+        print("El api en estos momentos no esta disponible")
 
 
 if __name__ == "__main__":

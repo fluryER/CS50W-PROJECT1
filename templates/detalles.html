@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles {{ isbn }}</title>
+</head>
+<body>
+    <h1>title: {{ title }}</h1>
+    <p>Autor: {{ author }}</p>
+    <img src="{{ img }}"/>
+    <p>Description: {{ description }}</p>
+    <p>Year: {{ year }}</p>
+    <p>Rating: {{ rating }}</p>
+    <p>Review count: {{ rating_count }}</p>
+
+    <div>
+        <br>
+        <h2>Reviews de los usuarios:</h2>
+        <h2>Username: Fatima</h2>
+        <h3>Comentario: Me gusta el libro</h3>
+        <h4>Puntuacion: 4/5</h4>
+    </div>
+
+    <form action="" method="post">
+        <label for="">Ingrese su puntuacion</label>
+        <select name="puntuacion" id="cars">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+          <p><textarea name="comentario" id="" cols="200" rows="10"></textarea></p>
+          <button type="submit">Enviar reseña</button>
+    </form>
+
+</body>
+</html>
