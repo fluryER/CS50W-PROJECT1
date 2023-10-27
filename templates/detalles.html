@@ -15,14 +15,17 @@
     <p>Review count: {{ rating_count }}</p>
 
     <div>
+        {% for review in comments %}
         <br>
         <h2>Reviews de los usuarios:</h2>
-        <h2>Username: Fatima</h2>
-        <h3>Comentario: Me gusta el libro</h3>
-        <h4>Puntuacion: 4/5</h4>
+        <h2>Username: {{review.user_id.name}} </h2>
+        <h3>Comentario: {{review.comment}} </h3>
+        <h4>Puntuacion: {{review.score}} </h4>
+        {% endfor %}
     </div>
 
-    <form action="" method="post">
+    <form action="/reseña" method="post">
+        <input type="hidden" value ="{{ isbn }}" name = "isbn">
         <label for="">Ingrese su puntuacion</label>
         <select name="puntuacion" id="cars">
             <option value="1">1</option>
